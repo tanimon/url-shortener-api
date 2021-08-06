@@ -66,17 +66,19 @@ app.post('/api/shorturl', async (req, res) => {
   res.json({ original_url: originalUrl, short_url: shortUrl });
 });
 
-app.get('/api/shorturl/:shortUrl', (req, res) => {
-  Url.findOne({ shortUrl: req.params.shortUrl }, (err, url) => {
-    if (err) {
-      return res.status(500).send(err);
-    }
-    if (!url) {
-      return res.status(404).send('Not found');
-    }
+const getOriginalUrl = async (shortUrl) => {
+  const url = await Url.findOne({ shortUrl }).exec();
+  return url?.shortUrl;
+};
 
-    res.redirect(url.originalUrl);
-  });
+app.get('/api/shorturl/:shortUrl', (req, res) => {
+  const originalUrl = await getOriginalUrl(req.params.shortUrl);
+
+  if (!originalUrl) {
+    return res.status(404).send('Not Found');
+  }
+
+  res.redirect(originalUrl);
 });
 
 app.listen(port, function () {
