@@ -39,28 +39,19 @@ urlSchema.plugin(autoIncrement, { inc_field: 'shortUrl' });
 
 const Url = mongoose.model('Url', urlSchema);
 
-const getShortUrl = (originalUrl, done) => {
-  Url.findOne({ originalUrl }, (err, url) => {
-    if (err) {
-      return done(err);
-    }
-    if (url) {
-      return done(null, url.shortUrl);
-    }
+const getShortUrl = async (originalUrl) => {
+  const url = await Url.findOne({ originalUrl }).exec();
+  if (url) {
+    return url.shortUrl;
+  }
 
-    Url.create({ originalUrl }, (err, data) => {
-      if (err) {
-        return done(err);
-      }
-
-      done(null, data.shortUrl);
-    });
-  });
+  const newUrl = await Url.create({ originalUrl });
+  return newUrl.shortUrl;
 };
 
 import validUrl from 'valid-url';
 
-app.post('/api/shorturl', (req, res) => {
+app.post('/api/shorturl', async (req, res) => {
   const originalUrl = req.body.url;
 
   console.log(req.body);
@@ -70,14 +61,9 @@ app.post('/api/shorturl', (req, res) => {
     return res.json({ error: 'invalid url' });
   }
 
-  getShortUrl(originalUrl, (err, shortUrl) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).send(err);
-    }
-    console.log(`Short URL: ${shortUrl}`);
-    res.json({ original_url: originalUrl, short_url: shortUrl });
-  });
+  const shortUrl = await getShortUrl(originalUrl);
+  console.log(`Short URL: ${shortUrl}`);
+  res.json({ original_url: originalUrl, short_url: shortUrl });
 });
 
 app.get('/api/shorturl/:shortUrl', (req, res) => {
