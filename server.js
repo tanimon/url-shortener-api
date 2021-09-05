@@ -1,12 +1,11 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
+import indexRouter from './routes/index.route.js';
+import apiRouter from './routes/api.route.js';
 
 dotenv.config();
 const app = express();
-
-// Basic Configuration
-const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use('/public', express.static(`${process.cwd()}/public`));
@@ -17,15 +16,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/', function (req, res) {
-  res.sendFile(process.cwd() + '/views/index.html');
-});
+app.use('/', indexRouter);
+app.use('/api', apiRouter);
 
-import { getShortUrl, getOriginalUrl } from './controllers/url.controller.js';
-
-app.post('/api/shorturl', getShortUrl);
-app.get('/api/shorturl/:shortUrl', getOriginalUrl);
-
+const port = process.env.PORT || 3000;
 app.listen(port, function () {
   console.log(`Listening on port ${port}`);
 });
