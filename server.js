@@ -21,33 +21,10 @@ app.get('/', function (req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
-import { url as urlRepo } from './repositories/mongo/mongo.repository.js';
-import validUrl from 'valid-url';
+import { getShortUrl, getOriginalUrl } from './controllers/url.controller.js';
 
-app.post('/api/shorturl', async (req, res) => {
-  const originalUrl = req.body.url;
-
-  console.log(req.body);
-
-  if (!validUrl.isWebUri(originalUrl)) {
-    console.log(`Invalid URL: ${originalUrl}`);
-    return res.json({ error: 'invalid url' });
-  }
-
-  const shortUrl = await urlRepo.getShortUrl(originalUrl);
-  console.log(`Short URL: ${shortUrl}`);
-  res.json({ original_url: originalUrl, short_url: shortUrl });
-});
-
-app.get('/api/shorturl/:shortUrl', async (req, res) => {
-  const originalUrl = await urlRepo.getOriginalUrl(req.params.shortUrl);
-
-  if (!originalUrl) {
-    return res.status(404).send('Not Found');
-  }
-
-  res.redirect(originalUrl);
-});
+app.post('/api/shorturl', getShortUrl);
+app.get('/api/shorturl/:shortUrl', getOriginalUrl);
 
 app.listen(port, function () {
   console.log(`Listening on port ${port}`);
