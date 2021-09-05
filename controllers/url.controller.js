@@ -16,7 +16,7 @@ export const getShortUrl = async (req, res) => {
   res.json({ original_url: originalUrl, short_url: shortUrl });
 };
 
-export const getOriginalUrl = async (req, res) => {
+export const redirectToOriginalUrl = async (req, res) => {
   const shortUrl = req.params.shortUrl;
   console.log(`Short URL: ${shortUrl}`);
 
